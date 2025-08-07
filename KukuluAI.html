@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Kukulu AI - The Unofficial Cura Profile Generator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        :root {
+            /* Night theme colors */
+            --bg: #0a0a0a;
+            --fg: #ffffff;
+            --card: #1a0033;
+            --accent: #8a2be2;
+            --border: #4a0080;
+            --hover: #9d4edd;
+            --shadow: rgba(138, 43, 226, 0.3);
+            --card-shadow: rgba(138, 43, 226, 0.2);
+            --warning-bg: rgba(255, 193, 7, 0.15);
+            --warning-border: rgba(255, 193, 7, 0.5);
+            --warning-text: #ffc107;
+            --link-color: #c77dff;
+        }
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 2rem;
+            min-height: 100vh;
+            background-image: 
+                radial-gradient(circle at 10% 20%, rgba(138, 43, 226, 0.2) 0%, transparent 30%),
+                radial-gradient(circle at 90% 80%, rgba(138, 43, 226, 0.2) 0%, transparent 30%);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+        
+        #card {
+            background: var(--card);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 10px 25px var(--shadow);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 0.5rem;
+        }
+        
+        h1 { 
+            font-size: 1.75rem; 
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent), var(--hover));
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            letter-spacing: -0.025em;
+        }
+        
+        .subtitle {
+            font-size: 0.9rem;
+            color: var(--fg);
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+        
+        .warning {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.75rem;
+            background-color: var(--warning-bg);
+            border: 1px solid var(--warning-border);
+            border-radius: 8px;
+            color: var(--warning-text);
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        label { 
+            display: block; 
+            margin-bottom: 0.5rem; 
+            font-weight: 600;
+            font-size: 0.875rem;
+            color: var(--fg);
+            opacity: 0.9;
+        }
+        
+        select, input[type="password"], input[type="text"], textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            background: #0d0d1a;
+            color: var(--fg);
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        
+        select:focus, input[type="password"]:focus, input[type="text"]:focus, textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.3);
+        }
+        
+        button {
+            cursor: pointer;
+            background: var(--accent);
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        button:hover {
+            background: var(--hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(138, 43, 226, 0.4);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        button:disabled { 
+            opacity: 0.7; 
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .row { 
+            display: flex; 
+            gap: 0.75rem; 
+        }
+        
+        .row select { flex: 1 1 0; }
+        .row button { flex: 0 0 auto; width: auto; padding: 0.75rem 1rem; }
+        
+        textarea {
+            min-height: 100px;
+            height: auto;
+            resize: vertical;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 0.75rem;
+            background: #0d0d1a;
+            color: var(--fg);
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.875rem;
+            line-height: 1.5;
+        }
+        
+        .modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .modal > div {
+            background: var(--card);
+            padding: 1.75rem;
+            border-radius: 12px;
+            max-width: 320px;
+            width: 90%;
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+            box-shadow: 0 15px 35px var(--shadow);
+            border: 1px solid var(--border);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .modal input { width: 100%; }
+        
+        /* Robot spinner */
+        .robot-head {
+            font-size: 3rem;
+            animation: spin 1.5s linear infinite;
+            display: inline-block;
+        }
+        
+        .small-robot {
+            font-size: 1.2rem;
+            vertical-align: middle;
+            display: inline-block;
+            margin-left: 0.5rem;
+        }
+        
+        @keyframes spin { 
+            to { 
+                transform: rotate(360deg); 
+            } 
+        }
+        
+        /* Loading animation enhancements */
+        .loading-container {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .loading-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(10, 10, 10, 0.85);
+            backdrop-filter: blur(2px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            border-radius: 12px;
+            z-index: 10;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .loading-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .loading-text {
+            color: var(--fg);
+            font-size: 0.95rem;
+            font-weight: 500;
+            opacity: 0.9;
+            text-align: center;
+        }
+        
+        .pulse {
+            animation: pulse 1.5s ease infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 0.6; }
+            50% { opacity: 1; }
+            100% { opacity: 0.6; }
+        }
+        
+        /* Skeleton loader for textarea */
+        .skeleton-loader {
+            width: 100%;
+            min-height: 100px;
+            height: 12rem;
+            border-radius: 8px;
+            background: linear-gradient(90deg, 
+                rgba(138, 43, 226, 0.1) 25%, 
+                rgba(138, 43, 226, 0.3) 50%, 
+                rgba(138, 43, 226, 0.1) 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            display: none;
+        }
+        
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        
+        .skeleton-loader.active {
+            display: block;
+        }
+        
+        /* Save dialog specific styles */
+        .save-dialog-header {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        
+        .save-dialog-row {
+            display: flex;
+            gap: 0.5rem;
+            align-items: flex-end;
+        }
+        
+        .save-dialog-row input {
+            flex: 1;
+        }
+        
+        .save-dialog-row select {
+            flex: 0 0 auto;
+            width: 120px;
+        }
+        
+        .extension-info {
+            font-size: 0.75rem;
+            color: var(--fg);
+            opacity: 0.7;
+            margin-top: 0.25rem;
+        }
+        
+        /* Browser compatibility notice */
+        .compatibility-notice {
+            font-size: 0.75rem;
+            color: var(--fg);
+            opacity: 0.7;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        /* Footer styles */
+        .footer {
+            font-size: 0.8rem;
+            color: var(--fg);
+            opacity: 0.7;
+            text-align: center;
+            padding-top: 0.5rem;
+            margin-top: 0.5rem;
+            border-top: 1px solid var(--border);
+        }
+        
+        .footer a {
+            color: var(--link-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+        
+        .footer a:hover {
+            color: var(--hover);
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <div id="card">
+        <div class="header">
+            <h1>Kukulu AI</h1>
+            <div class="subtitle">The Unofficial Cura Profile Generator</div>
+        </div>
+        <div class="warning">
+            ⚠️ Experimental - Use At Your Own Risk
+        </div>
+        <div class="loading-container">
+            <div class="loading-overlay" id="loadingOverlay">
+                <div class="robot-head">🤖</div>
+                <div class="loading-text pulse">Generating profile...</div>
+            </div>
+            
+            <label for="apiKey">OpenAI API key</label>
+            <input type="password" id="apiKey" placeholder="sk-..." autocomplete="off">
+            
+            <label>Printer</label>
+            <div class="row">
+                <select id="printer"></select>
+                <button id="addPrinterBtn">Add</button>
+            </div>
+            
+            <label>Filament</label>
+            <div class="row">
+                <select id="filament"></select>
+                <button id="addFilamentBtn">Add</button>
+            </div>
+            
+            <button id="requestBtn">Request profile</button>
+            
+            <label for="result">Profile</label>
+            <div class="skeleton-loader" id="skeletonLoader"></div>
+            <textarea id="result" readonly></textarea>
+            
+            <button id="saveBtn">Save to file…</button>
+            
+            <div class="footer">
+                API Key can be obtained at <a href="https://platform.openai.com/api-keys" target="_blank" rel="noopener noreferrer">platform.openai.com/api-keys</a>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Modal for adding items -->
+    <div class="modal" id="modal">
+        <div>
+            <label id="modalLabel">Add new item</label>
+            <input type="text" id="modalInput" placeholder="Name">
+            <div class="row">
+                <button id="modalCancel">Cancel</button>
+                <button id="modalAdd">Add</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Save dialog modal -->
+    <div class="modal" id="saveModal">
+        <div>
+            <div class="save-dialog-header">Save Profile</div>
+            <label for="saveFilename">Filename</label>
+            <div class="save-dialog-row">
+                <input type="text" id="saveFilename" placeholder="profile">
+                <select id="saveExtension">
+                    <option value=".curaprofile">.curaprofile</option>
+                    <option value=".cfg">.cfg</option>
+                    <option value=".txt">.txt</option>
+                </select>
+            </div>
+            <div class="extension-info">
+                Cura typically uses .curaprofile or .cfg extensions
+            </div>
+            <div id="compatibilityNotice" class="compatibility-notice">
+                Your browser supports native file saving dialog
+            </div>
+            <div class="row">
+                <button id="saveModalCancel">Cancel</button>
+                <button id="saveModalSave">Save</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        (() => {
+            /* ========== Constants ========== */
+            const MODEL = "gpt-4o";
+            const ENDPOINT = "https://api.openai.com/v1/chat/completions";
+            
+            /* ========== DOM refs ========== */
+            const apiKeyInput = document.getElementById("apiKey");
+            const printerSelect = document.getElementById("printer");
+            const addPrinterBtn = document.getElementById("addPrinterBtn");
+            const filamentSelect = document.getElementById("filament");
+            const addFilamentBtn = document.getElementById("addFilamentBtn");
+            const requestBtn = document.getElementById("requestBtn");
+            const resultArea = document.getElementById("result");
+            const saveBtn = document.getElementById("saveBtn");
+            const modal = document.getElementById("modal");
+            const modalLabel = document.getElementById("modalLabel");
+            const modalInput = document.getElementById("modalInput");
+            const modalAdd = document.getElementById("modalAdd");
+            const modalCancel = document.getElementById("modalCancel");
+            const loadingOverlay = document.getElementById("loadingOverlay");
+            const skeletonLoader = document.getElementById("skeletonLoader");
+            
+            // Save dialog elements
+            const saveModal = document.getElementById("saveModal");
+            const saveFilename = document.getElementById("saveFilename");
+            const saveExtension = document.getElementById("saveExtension");
+            const saveModalCancel = document.getElementById("saveModalCancel");
+            const saveModalSave = document.getElementById("saveModalSave");
+            const compatibilityNotice = document.getElementById("compatibilityNotice");
+            
+            /* ========== Storage helpers ========== */
+            const storage = {
+                get: (key, fallback = []) => JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback)),
+                set: (key, val) => localStorage.setItem(key, JSON.stringify(val))
+            };
+            
+            /* ========== State ========== */
+            let printers = storage.get("printers", ["Anycubic Chiron", "Prusa i3 MK4"]);
+            let filaments = storage.get("filaments", ["PLA", "PETG"]);
+            
+            /* ========== UI population ========== */
+            function popSelect(select, arr) {
+                select.innerHTML = "";
+                arr.forEach(item => {
+                    const opt = document.createElement("option");
+                    opt.value = opt.textContent = item;
+                    select.appendChild(opt);
+                });
+            }
+            
+            function initUI() {
+                popSelect(printerSelect, printers);
+                popSelect(filamentSelect, filaments);
+                apiKeyInput.value = localStorage.getItem("apiKey") || "";
+            }
+            
+            /* ========== Modal logic ========== */
+            function openModal(label, onAdd) {
+                modalLabel.textContent = label;
+                modalInput.value = "";
+                modal.style.display = "flex";
+                modalInput.focus();
+                modalAdd.onclick = () => {
+                    const val = modalInput.value.trim();
+                    if (val) onAdd(val);
+                    closeModal();
+                };
+                modalCancel.onclick = closeModal;
+            }
+            
+            function closeModal() {
+                modal.style.display = "none";
+            }
+            
+            /* ========== Save dialog logic ========== */
+            function openSaveDialog() {
+                const text = resultArea.value.trim();
+                if (!text) {
+                    alert("No profile to save.");
+                    return;
+                }
+                
+                // Generate default filename
+                const printer = printerSelect.value.replace(/\s+/g, "_");
+                const filament = filamentSelect.value.replace(/\s+/g, "_");
+                const defaultName = `${filament}_${printer}`;
+                
+                saveFilename.value = defaultName;
+                saveExtension.value = ".curaprofile";
+                
+                // Check if File System Access API is supported
+                if ('showSaveFilePicker' in window) {
+                    // Hide extension dropdown and show compatibility notice
+                    saveExtension.style.display = 'none';
+                    compatibilityNotice.style.display = 'block';
+                } else {
+                    // Show extension dropdown and hide compatibility notice
+                    saveExtension.style.display = 'block';
+                    compatibilityNotice.style.display = 'none';
+                }
+                
+                saveModal.style.display = "flex";
+                saveFilename.focus();
+                saveFilename.select();
+            }
+            
+            function closeSaveDialog() {
+                saveModal.style.display = "none";
+            }
+            
+            async function saveFile() {
+                const filename = saveFilename.value.trim();
+                const extension = saveExtension.value;
+                
+                if (!filename) {
+                    alert("Please enter a filename.");
+                    return;
+                }
+                
+                const fullFilename = filename + extension;
+                const text = resultArea.value.trim();
+                
+                // Check if File System Access API is supported
+                if ('showSaveFilePicker' in window) {
+                    try {
+                        // Show the native file save dialog
+                        const fileHandle = await window.showSaveFilePicker({
+                            suggestedName: fullFilename,
+                            types: [
+                                {
+                                    description: 'Cura Profile Files',
+                                    accept: {
+                                        'text/plain': ['.curaprofile', '.cfg', '.txt']
+                                    }
+                                }
+                            ]
+                        });
+                        
+                        // Write the file
+                        const writable = await fileHandle.createWritable();
+                        await writable.write(text);
+                        await writable.close();
+                        
+                        closeSaveDialog();
+                    } catch (err) {
+                        // User cancelled the save dialog
+                        if (err.name !== 'AbortError') {
+                            console.error('Error saving file:', err);
+                            alert('Error saving file: ' + err.message);
+                        }
+                    }
+                } else {
+                    // Fallback for browsers that don't support File System Access API
+                    const blob = new Blob([text], { type: "text/plain" });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement("a");
+                    a.href = url;
+                    a.download = fullFilename;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                    
+                    closeSaveDialog();
+                }
+            }
+            
+            window.onclick = e => {
+                if (e.target === modal) closeModal();
+                if (e.target === saveModal) closeSaveDialog();
+            };
+            
+            /* ========== Event bindings ========== */
+            apiKeyInput.addEventListener("input", () => localStorage.setItem("apiKey", apiKeyInput.value));
+            
+            addPrinterBtn.onclick = () => openModal("Add printer", name => {
+                if (!printers.includes(name)) {
+                    printers.push(name);
+                    storage.set("printers", printers);
+                    popSelect(printerSelect, printers);
+                    printerSelect.value = name;
+                }
+            });
+            
+            addFilamentBtn.onclick = () => openModal("Add filament", name => {
+                if (!filaments.includes(name)) {
+                    filaments.push(name);
+                    storage.set("filaments", filaments);
+                    popSelect(filamentSelect, filaments);
+                    filamentSelect.value = name;
+                }
+            });
+            
+            saveBtn.onclick = openSaveDialog;
+            
+            saveModalCancel.onclick = closeSaveDialog;
+            saveModalSave.onclick = saveFile;
+            
+            // Handle Enter key in save dialog
+            saveFilename.addEventListener("keydown", e => {
+                if (e.key === "Enter") saveFile();
+            });
+            
+            /* ========== API call ========== */
+            async function requestProfile(printer, filament) {
+                const key = apiKeyInput.value.trim();
+                if (!key) {
+                    alert("Enter your OpenAI API key.");
+                    return "";
+                }
+                
+                const prompt =
+`Provide the most optimal Cura material-profile script **only** for
+printer=${printer} and
+filament=${filament}.
+Return valid Cura INI syntax under the [values] section only — no commentary. Make sure to do a websearch and reason other people comments on optimal settings. If you can find acceleration and deceleration speed seetings add them as well.Try and find the following settings online to add: Layer Height
+Initial Layer Height
+Line Width
+Wall Line Width
+Outer Wall Line Width
+Inner Wall(s) Line Width
+Top/Bottom Line Width
+Infill Line Width
+Skirt/Brim Line Width
+Support Line Width
+Support Interface Line Width
+Support Roof Line Width
+Support Floor Line Width
+Prime Tower Line Width
+Initial Layer Line Width
+Wall Thickness
+Wall Line Count
+Outer Wall Wipe Distance
+Top Surface Skin Layers
+Top Surface Skin Line Width
+Top Surface Skin Pattern
+Top Surface Skin Expand Distance
+Optimize Wall Printing Order
+Wall Ordering
+Outer Before Inner Walls
+Alternate Extra Wall
+Compensate Wall Overlaps
+Compensate Inner Wall Overlaps
+Fill Gaps Between Walls
+Filter Out Tiny Gaps
+Print Thin Walls
+Minimum Wall Flow
+Z Seam Alignment
+Z Seam Position
+Z Seam X
+Z Seam Y
+Seam Corner Preference
+Minimum Corner Angle
+Horizontal Expansion
+Initial Layer Horizontal Expansion
+Hole Horizontal Expansion
+Slicing Tolerance
+Top/Bottom Thickness
+Top Thickness
+Top Layers
+Bottom Thickness
+Bottom Layers
+Initial Bottom Layers
+Top/Bottom Pattern
+Top Pattern
+Bottom Pattern
+Initial Layer Pattern
+Top/Bottom Line Directions
+Bottom Pattern Initial Layer
+Skin Overlap Percentage
+Skin Overlap
+Skin Removal Width
+Skin Expand Distance
+Top Skin Expand Distance
+Bottom Skin Expand Distance
+Monotonic Top/Bottom Order
+Monotonic Ironing Order
+Connect Top/Bottom Polygons
+Extra Skin Wall Count
+Enable Ironing
+Ironing Pattern
+Ironing Line Spacing
+Ironing Flow
+Ironing Inset
+Ironing Speed
+Ironing Acceleration
+Ironing Jerk
+Iron Only Highest Layer
+Infill Density
+Infill Line Distance
+Infill Pattern
+Connect Infill Lines
+Infill Line Directions
+Infill Overlap Percentage
+Infill Overlap
+Infill Wipe Distance
+Infill Layer Thickness
+Gradual Infill Steps
+Gradual Infill Step Height
+Infill Before Walls
+Infill Support
+Infill Travel Optimization
+Skin Edge Support Layers
+Skin Edge Support Thickness
+Minimum Infill Area
+Randomize Infill Start
+Infill Line Multiplier
+Extra Infill Wall Count
+Combine Infill Every X Layers
+Printing Temperature
+Printing Temperature Initial Layer
+Initial Printing Temperature
+Final Printing Temperature
+Build Plate Temperature
+Build Plate Temperature Initial Layer
+Flow
+Initial Layer Flow
+Wall Flow
+Outer Wall Flow
+Inner Wall Flow
+Top/Bottom Flow
+Infill Flow
+Skirt/Brim Flow
+Support Flow
+Support Interface Flow
+Prime Tower Flow
+Enable Retraction
+Retract at Layer Change
+Retraction Distance
+Retraction Speed
+Retraction Retract Speed
+Retraction Prime Speed
+Retraction Extra Prime Amount
+Retraction Minimum Travel
+Maximum Retraction Count
+Minimum Extrusion Distance Window
+Limit Support Retractions
+Nozzle Switch Retraction Distance
+Nozzle Switch Retraction Speed
+Standby Temperature
+Print Speed
+Infill Speed
+Wall Speed
+Outer Wall Speed
+Inner Wall Speed
+Top/Bottom Speed
+Top Surface Skin Speed
+Support Speed
+Support Infill Speed
+Support Interface Speed
+Support Roof Speed
+Support Floor Speed
+Travel Speed
+Initial Layer Speed
+Initial Layer Print Speed
+Initial Layer Travel Speed
+Skirt/Brim Speed
+Maximum Speed
+Number of Slower Layers
+Equalize Filament Flow
+Maximum Flow
+Enable Acceleration Control
+Print Acceleration
+Infill Acceleration
+Wall Acceleration
+Outer Wall Acceleration
+Inner Wall Acceleration
+Top/Bottom Acceleration
+Support Acceleration
+Travel Acceleration
+Initial Layer Acceleration
+Initial Layer Print Acceleration
+Initial Layer Travel Acceleration
+Skirt/Brim Acceleration
+Enable Jerk Control
+Print Jerk
+Infill Jerk
+Wall Jerk
+Outer Wall Jerk
+Inner Wall Jerk
+Top/Bottom Jerk
+Support Jerk
+Travel Jerk
+Initial Layer Jerk
+Initial Layer Print Jerk
+Initial Layer Travel Jerk
+Skirt/Brim Jerk
+Retract Before Outer Wall
+Avoid Printed Parts When Traveling
+Travel Avoid Distance
+Avoid Supports When Traveling
+Layer Start X
+Layer Start Y
+Combing Mode
+Max Comb Distance With No Retract
+Retract Before Move
+Z Hop When Retracted
+Z Hop Only Over Printed Parts
+Z Hop Height
+Z Hop After Extruder Switch
+Z Hop Speed
+Enable Print Cooling
+Fan Speed
+Initial Fan Speed
+Regular Fan Speed at Height
+Regular Fan Speed at Layer
+Maximum Fan Speed
+Regular/Maximum Fan Speed Threshold
+Minimum Layer Time
+Minimum Speed
+Lift Head
+Generate Support
+Support Structure
+Support Placement
+Support Overhang Angle
+Support Pattern
+Connect Support Lines
+Support Density
+Support Line Distance
+Initial Layer Support Line Distance
+Support Z Distance
+Support Top Distance
+Support Bottom Distance
+Support X/Y Distance
+Support Distance Priority
+Minimum Support X/Y Distance
+Support Stair Step Height
+Support Stair Step Maximum Width
+Support Join Distance
+Support Horizontal Expansion
+Support Infill Layer Thickness
+Gradual Support Infill Steps
+Gradual Support Infill Step Height
+Use Towers
+Tower Diameter
+Minimum Tower Diameter
+Tower Roof Angle
+Enable Support Interface
+Enable Support Roof
+Enable Support Floor
+Support Interface Thickness
+Support Roof Thickness
+Support Floor Thickness
+Support Interface Resolution
+Support Interface Density
+Support Roof Density
+Support Floor Density
+Support Interface Pattern
+Support Roof Pattern
+Support Floor Pattern
+Support Interface Line Directions
+Minimum Support Area
+Support Brim Enable
+Support Brim Width
+Support Brim Line Count
+Build Plate Adhesion Type
+Skirt/Brim Minimum Length
+Brim Width
+Brim Line Count
+Brim Distance
+Brim Replaces Support
+Skirt Line Count
+Skirt Distance
+Raft Extra Margin
+Raft Air Gap
+Raft Top Layers
+Raft Top Layer Thickness
+Raft Top Line Width
+Raft Top Spacing
+Raft Middle Thickness
+Raft Middle Line Width
+Raft Middle Spacing
+Raft Base Thickness
+Raft Base Line Width
+Raft Base Line Spacing
+Raft Print Speed
+Raft Travel Speed
+Raft Print Acceleration
+Raft Print Jerk
+Raft Fan Speed
+Ooze Shield Enabled
+Ooze Shield Angle
+Ooze Shield Distance
+Ooze Shield Wall Thickness
+Ooze Shield Line Count
+Wipe Inactive Nozzle on Prime Tower
+Wipe Inactive Nozzle on Outer Wall
+Prime Tower Enable
+Prime Tower Size
+Prime Tower Minimum Volume
+Prime Tower X Position
+Prime Tower Y Position
+Nozzle Switch Extra Prime Amount
+Wipe Inactive Nozzle Per Layer
+Union Overlapping Volumes
+Remove All Holes
+Extensive Stitching
+Keep Disconnected Faces
+Merged Meshes Overlap
+Remove Mesh Intersection
+Maximum Resolution
+Maximum Travel Resolution
+Maximum Deviation
+Print Sequence
+Spiralize Outer Contour
+Smooth Spiralized Contours
+Surface Mode
+Fuzzy Skin
+Fuzzy Skin Outside Only
+Fuzzy Skin Thickness
+Fuzzy Skin Density
+Fuzzy Skin Point Distance
+Mold
+Mold Width
+Mold Angle
+Mold Roof Height
+Enable Coasting
+Coasting Volume
+Minimum Volume Before Coasting
+Coasting Speed
+Slicing Tolerance
+Top Surface Skin Removal Width
+Alternate Skin Rotation
+Enable Bridge Settings
+Bridge Wall Coasting
+Bridge Wall Speed
+Bridge Wall Flow
+Bridge Skin Speed
+Bridge Skin Flow
+Bridge Skin Density
+Bridge Fan Speed
+Maximum Bridge Skin Fan Speed
+Use Adaptive Layers
+Adaptive Layer Maximum Variation
+Adaptive Layer Variation Step Size
+Adaptive Layer Topography Size
+Make Overhang Printable
+Maximum Model Angle
+Small Feature Size
+Small Feature Speed
+Small Hole Max Size
+Flow Rate Compensation
+Maximum Flow Rate Compensation
+Conical Support
+Conical Support Angle
+Conical Support Minimum Width`;
+                
+                const body = JSON.stringify({
+                    model: MODEL,
+                    messages: [
+                        { role: "user", content: prompt }
+                    ],
+                    temperature: 0
+                });
+                
+                const res = await fetch(ENDPOINT, {
+                    method: "POST",
+                    headers: {
+                        "Authorization": `Bearer ${key}`,
+                        "Content-Type": "application/json"
+                    },
+                    body
+                });
+                
+                if (!res.ok) {
+                    const err = await res.json().catch(() => ({}));
+                    throw new Error(err.error?.message || `HTTP ${res.status}`);
+                }
+                
+                const data = await res.json();
+                return data.choices?.[0]?.message?.content?.trim() || "";
+            }
+            
+            requestBtn.onclick = async () => {
+                // Show loading states
+                requestBtn.disabled = true;
+                requestBtn.innerHTML = "Request profile<span class='small-robot'>🤖</span>";
+                loadingOverlay.classList.add("active");
+                skeletonLoader.classList.add("active");
+                resultArea.style.display = "none";
+                
+                try {
+                    const profile = await requestProfile(printerSelect.value, filamentSelect.value);
+                    resultArea.value = profile;
+                    // Auto-fit textarea to content
+                    resultArea.style.height = "auto";
+                    resultArea.style.height = resultArea.scrollHeight + "px";
+                } catch (err) {
+                    alert("Error: " + err.message);
+                } finally {
+                    // Hide loading states
+                    requestBtn.disabled = false;
+                    requestBtn.innerHTML = "Request profile";
+                    loadingOverlay.classList.remove("active");
+                    skeletonLoader.classList.remove("active");
+                    resultArea.style.display = "block";
+                }
+            };
+            
+            /* ========== Bootstrap ========== */
+            initUI();
+        })();
+    </script>
+</body>
+</html>
